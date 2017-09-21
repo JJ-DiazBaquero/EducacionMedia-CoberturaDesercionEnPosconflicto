@@ -125,7 +125,7 @@ $(document).ready(function () {
 <p>Si bien no se encuentra una relación directa entre cobertura y deserción en el pais para la educación media, al agregar variables como la violencia presentada en algunas regiones, puede verse una mayor concentración de deserción en estas regiones frente al resto del pais, lo cual indica que en las zonas de conflicto los actores armados impactaron negativamente la educación</p>
 
 
-
+<!-- Deberías mencionar de donde provienen los datos y si fueron preprocesados -->
 
 
 <script>
@@ -177,76 +177,78 @@ var svg = d3.select("#principal").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", `translate(${margin.left}, ${margin.top})`); //Puedes hacer uso de string interpolation de ES6
 
-d3.tsv("datosViolenciaEducacionMedia.tsv", function(error, data) {
-  if (error) throw error;
+d3.tsv("datosViolenciaEducacionMedia.tsv", row => { //Esta función permite modificar los datos antes de leer el archivo
+    return {
+      cobertura: +row.COBERTURA_NETA_MEDIA,
+      desercion: +row.DESERCION_MEDIA,
+      departamento: row.DEPARTAMENTO
+    }  
+  },
+  (error, data) => { // Puedes hacer uso de las arrow functions de ES6
+    if (error) throw error;
 
-  data.forEach(function(d) {
-    d.COBERTURA_NETA_MEDIA  = +d.COBERTURA_NETA_MEDIA ;
-    d.DESERCION_MEDIA = +d.DESERCION_MEDIA;
+    x.domain(d3.extent(data, d => d.cobertura)).nice();
+    y.domain(d3.extent(data, d => d.desercion)).nice();
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", `translate(0, ${height})`)//Puedes hacer uso de la interpolación de valores en strings de ES6
+        .call(xAxis)
+      .append("text")
+        .attr("class", "label")
+        .attr("x", width)
+        .attr("y", -6)
+        .style("text-anchor", "end")
+        .text("Cobertura educación media (%)");
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+      .append("text")
+        .attr("class", "label")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Deserción educación media (%)")
+
+    svg.selectAll(".dot")
+        .data(data)
+      .enter().append("circle")
+        .attr("class", "dot")
+        .attr("r", 3.5)
+        .attr("cx", d => x(d.cobertura))
+        .attr("cy", d => y(d.desercion))
+        .attr("fill", d => color(d.DEPARTAMENTO ))
+        .attr("class", d => d.DEPARTAMENTO);
+
+    svg.selectAll(".Otros")
+        .style("opacity",0.3)
+    svg.selectAll(".Violencia")
+        .style("opacity",0.8)
+
+    var legend = svg.selectAll(".legend")
+        .data(color.domain())
+      .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+
+    legend.append("rect")
+        .attr("x", width - 18)
+        .attr("width", 18)
+        .attr("height", 18)
+        .style("fill", color);
+
+    legend.append("text")
+        .attr("x", width - 24)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .style("text-anchor", "end")
+        .text(d => d);
+
   });
-
-  x.domain(d3.extent(data, function(d) { return d.COBERTURA_NETA_MEDIA; })).nice();
-  y.domain(d3.extent(data, function(d) { return d.DESERCION_MEDIA; })).nice();
-
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-    .append("text")
-      .attr("class", "label")
-      .attr("x", width)
-      .attr("y", -6)
-      .style("text-anchor", "end")
-      .text("Cobertura educación media (%)");
-
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("class", "label")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Deserción educación media (%)")
-
-  svg.selectAll(".dot")
-      .data(data)
-    .enter().append("circle")
-      .attr("class", "dot")
-      .attr("r", 3.5)
-      .attr("cx", function(d) { return x(d.COBERTURA_NETA_MEDIA); })
-      .attr("cy", function(d) { return y(d.DESERCION_MEDIA ); })
-      .attr("fill", function(d) { return color(d.DEPARTAMENTO ); })
-      .attr("class", function(d){return d.DEPARTAMENTO});
-
-  svg.selectAll(".Otros")
-      .style("opacity",0.3)
-  svg.selectAll(".Violencia")
-      .style("opacity",0.8)
-
-  var legend = svg.selectAll(".legend")
-      .data(color.domain())
-    .enter().append("g")
-      .attr("class", "legend")
-      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-
-  legend.append("rect")
-      .attr("x", width - 18)
-      .attr("width", 18)
-      .attr("height", 18)
-      .style("fill", color);
-
-  legend.append("text")
-      .attr("x", width - 24)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .style("text-anchor", "end")
-      .text(function(d) { return d; });
-
-});
 
 </script>
 </div>
