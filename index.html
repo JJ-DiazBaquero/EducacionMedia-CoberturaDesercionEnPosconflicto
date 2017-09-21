@@ -184,7 +184,7 @@ d3.tsv("datosViolenciaEducacionMedia.tsv", row => { //Esta función permite modi
       cobertura: +row.COBERTURA_NETA_MEDIA,
       desercion: +row.DESERCION_MEDIA,
       departamento: row.DEPARTAMENTO
-    }  
+    }
   },
   (error, data) => { // Puedes hacer uso de las arrow functions de ES6
     if (error) throw error;
@@ -221,8 +221,8 @@ d3.tsv("datosViolenciaEducacionMedia.tsv", row => { //Esta función permite modi
         .attr("r", 3.5)
         .attr("cx", d => x(d.cobertura))
         .attr("cy", d => y(d.desercion))
-        .attr("fill", d => color(d.DEPARTAMENTO ))
-        .attr("class", d => d.DEPARTAMENTO);
+        .attr("fill", d => color(d.departamento ))
+        .attr("class", d => d.departamento);
 
     svg.selectAll(".Otros")
         .style("opacity",0.3)
